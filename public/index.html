@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidsrc Scraper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vidsrc Scraper</h1>
+
+    <div class="form-group">
+        <label for="movieId">Movie ID:</label>
+        <input type="text" id="movieId" placeholder="Enter movie ID">
+    </div>
+
+    <div class="form-group">
+        <label for="format">Format:</label>
+        <select id="format">
+            <option value="m3u8">HLS (m3u8)</option>
+            <option value="mp4">MP4</option>
+        </select>
+    </div>
+
+    <button onclick="scrapeMovie()">Scrape Movie</button>
+
+    <div id="result"></div>
+
+    <script>
+        async function scrapeMovie() {
+            const movieId = document.getElementById('movieId').value;
+            const format = document.getElementById('format').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!movieId) {
+                resultDiv.innerHTML = '<p class="error">Please enter a movie ID</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch(`/api/?id=${encodeURIComponent(movieId)}&format=${format}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    let html = `<h2>${data.title}</h2>`;
+                    html += `<p><strong>Format:</strong> ${data.format}</p>`;
+                    html += `<p><strong>Stream URL:</strong> <a href="${data.streamUrl}" target="_blank">${data.streamUrl}</a></p>`;
+                    html += `<p><strong>Original URL:</strong> <a href="${data.originalUrl}" target="_blank">${data.originalUrl}</a></p>`;
+
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">${data.error || 'An error occurred'}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
